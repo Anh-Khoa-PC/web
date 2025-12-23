@@ -14,7 +14,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y g++
 
       - name: Build Elite Hunter
-        run: g++ -O3 -mavx2 -march=native -funroll-loops -pthread cloud_hunter.cpp -o nexus_hunter
+        run: g++ -O3 -mavx2 -march=native -funroll-loops -pthread NEXUS_V99_CLOUD.cpp -o nexus_hunter
 
       - name: Execute Session (5.5 Hours)
         run: |
