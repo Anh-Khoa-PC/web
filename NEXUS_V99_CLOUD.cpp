@@ -6,16 +6,19 @@
 #include <mutex>
 #include <chrono>
 #include <iomanip>
+#include <vector>
 
 using namespace std;
 
+// --- CẤU HÌNH ---
 #define MAX_HW 78
-#define NUM_THREADS 2 // GitHub free tier cung cấp 2 core
+#define NUM_THREADS 2 // GitHub Actions cung cấp 2 core CPU
 
 atomic<uint64_t> total_hashes{0};
 atomic<int> global_best{256};
 mutex file_mtx;
 
+// SHA-256 AVX2 MACROS (Tối ưu cho Intel/AMD trên Cloud)
 #define ROR(x, n) _mm256_or_si256(_mm256_srli_epi32(x, n), _mm256_slli_epi32(x, 32 - n))
 #define CH(x, y, z) _mm256_xor_si256(_mm256_and_si256(x, y), _mm256_andnot_si256(x, z))
 #define MAJ(x, y, z) _mm256_xor_si256(_mm256_xor_si256(_mm256_and_si256(x, y), _mm256_and_si256(x, z)), _mm256_and_si256(y, z))
@@ -72,13 +75,14 @@ void hunter(uint32_t n, int id) {
 }
 
 int main() {
+    cout << "Nexus Cloud Hunter V99.1 - Founder Anh Khoa" << endl;
     for(int i=0; i<NUM_THREADS; i++) thread(hunter, (uint32_t)time(0) + (i * 0xFFFFFFF), i).detach();
     auto start = chrono::steady_clock::now();
     while(true) {
         this_thread::sleep_for(chrono::minutes(1));
         auto now = chrono::steady_clock::now();
         double sec = chrono::duration<double>(now - start).count();
-        cout << "[PROG] " << (int)sec/60 << "m | " << (total_hashes.load()/sec)/1e6 << " MH/s | Best: " << global_best.load() << endl;
+        cout << "[CLOUD] " << (int)sec/60 << "m | " << (total_hashes.load()/sec)/1e6 << " MH/s | Best HW: " << global_best.load() << endl;
     }
     return 0;
 }
