@@ -1,25 +1,31 @@
 name: Nexus Cloud 100h Strategy
 on:
-  workflow_dispatch: # Cho phép Boss bấm nút chạy thủ công bất cứ lúc nào
+  workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *' # Cứ mỗi 6 tiếng nó tự động bật một đợt băm mới
+    - cron: '0 */6 * * *'
 
 jobs:
   nexus-hunt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Environment
+      - uses: actions/checkout@v4
+      
+      - name: Setup Compiler
         run: sudo apt-get update && sudo apt-get install -y g++
+
       - name: Build Elite Hunter
         run: g++ -O3 -mavx2 -march=native -funroll-loops -pthread cloud_hunter.cpp -o nexus_hunter
-      - name: Execute 6h Session
+
+      - name: Execute Session (5.5 Hours)
         run: |
-          # Chạy background và lưu PID
-          ./nexus_hunter & sleep 21000 # Chạy khoảng 5 tiếng 50 phút
+          # Chạy background và giới hạn thời gian để kịp upload
+          timeout 330m ./nexus_hunter || echo "Session finished"
+
       - name: Archive Results
-        if: always() # Luôn chạy bước này kể cả khi bước trên bị ngắt
-        uses: actions/upload-artifact@v3
+        if: always()
+        uses: actions/upload-artifact@v4 # ĐÃ SỬA THÀNH V4
         with:
-          name: nexus-artifacts-${{ github.run_id }}
+          name: nexus-results-${{ github.run_id }}
           path: RESULT_CLOUD.txt
+          retention-days: 3
+          
